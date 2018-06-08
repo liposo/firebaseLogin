@@ -26,8 +26,25 @@ class LoginForm extends Component {
           .auth()
           .createUserWithEmailAndPassword(email, password)
           .then(this.onLoginSuccess.bind(this))
-          .catch(this.onLoginFail().bind(this));
+          .catch(this.onLoginFail.bind(this));
       });
+  }
+
+  updateUserInfo() {
+    let username = this.state.email.substring(0, this.state.email.indexOf("@"));
+    let user = firebase.auth().currentUser;
+    user
+      .updateProfile({
+        displayName: username
+      })
+      .then(
+        function() {
+          let displayName = user.displayName;
+        },
+        function(error) {
+          console.log(error);
+        }
+      );
   }
 
   onLoginFail() {
@@ -35,6 +52,7 @@ class LoginForm extends Component {
   }
 
   onLoginSuccess() {
+    this.updateUserInfo();
     this.setState({
       email: "",
       password: "",

@@ -1,25 +1,55 @@
 import React, { Component } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 
 import firebase from "firebase";
 import config from "./config/firebaseAPIKey";
 
-import { Header } from "./components/common";
+import { Header, Button, Card, CardSection } from "./components/common";
 import LoginForm from "./components/LoginForm";
 
 class App extends Component {
-  initializeFirebase() {
-    firebase.initializeApp(config);
-  }
+  state = {
+    loggedIn: false,
+    user: null
+  };
 
   componentWillMount() {
-    this.initializeFirebase();
+    firebase.initializeApp(config);
+
+    firebase.auth().onAuthStateChanged(user => {
+      user
+        ? this.setState({ loggedIn: true, user: firebase.auth().currentUser })
+        : this.setState({ loggedIn: false, user: null });
+    });
   }
+
+  onButtonPress() {
+    console.log(this.state.user);
+    firebase.auth().signOut();
+  }
+
+  renderContent() {
+    return this.state.loggedIn ? (
+      <Card>
+        <CardSection>
+          <Text style={{ fontSize: 20, alignSelf: "center" }}>
+            Logged user: {this.state.user.displayName}
+          </Text>
+        </CardSection>
+        <CardSection>
+          <Button onPress={this.onButtonPress.bind(this)}>Logout</Button>
+        </CardSection>
+      </Card>
+    ) : (
+      <LoginForm />
+    );
+  }
+
   render() {
     return (
       <View style={{ justifyContent: "center" }}>
         <Header headerText="Firebase Authentication" />
-        <LoginForm />
+        {this.renderContent()}
       </View>
     );
   }
